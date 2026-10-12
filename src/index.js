@@ -1,11 +1,14 @@
-import { CSS } from './style.js';
+import { CSS, ASSIST_CSS } from './style.js';
+import { createAssistant } from './assistant.js';
+import { getState, resetState } from './state.js';
 import { createComponent } from './panel.js';
 import { detectContext, OWN_PANEL_SELECTOR } from './contexts.js';
 import { rememberTarget, forgetTarget } from './insert.js';
 import { t } from './i18n.js';
 
 (function () {
-	let panel, action, style, listeners = [], poll = null;
+	let panel, style, listeners = [], poll = null, assistant = null, menu = null;
+	const toggles = {};
 	const PLUGIN_ID = 'mo_help';
 
 	function addDocListener(type, fn, options) {
@@ -49,11 +52,12 @@ import { t } from './i18n.js';
 			author: 'Craftandoof',
 			description: 'Contextual Molang assistant: shows only the variables, queries, math and snippets relevant to the panel you are working in, and inserts them with one click.',
 			tags: ['Animation', 'Molang', 'Utility'],
-			version: '0.5.0',
+			version: '0.6.0',
 			min_version: '4.9.0',
 			variant: 'both',
 			onload() {
-				style = Blockbench.addCSS(CSS);
+				style = Blockbench.addCSS(CSS + ASSIST_CSS);
+				const prefs = getState();
 
 				// Default spot: floating over the 3D viewport, left of the right sidebar,
 				// so it does not cover the animation / keyframe panels on the left.
@@ -78,22 +82,41 @@ import { t } from './i18n.js';
 					component: createComponent(),
 				});
 
-				action = new Action('mo_help_toggle', {
-					name: t('toggle_action'),
-					description: t('toggle_desc'),
+				// ---- "Mo'Help" menu in the top bar -------------------------------------
+				const showFloating = () => { panel.moveTo(Blockbench.isMobile ? 'right_bar' : 'float'); refreshContext(); };
+				toggles.floating = new Toggle('mo_help_toggle', {
+					name: t('menu_floating'),
+					description: t('menu_floating_desc'),
 					icon: 'live_help',
 					category: 'view',
+					default: !isHidden(),
 					keybind: new Keybind({ key: 'h', ctrl: true, shift: true }),
-					click() {
-						if (isHidden()) {
-							panel.moveTo(Blockbench.isMobile ? 'right_bar' : 'float');
-							refreshContext();
-						} else {
-							panel.moveTo('hidden');
-						}
-					},
+					onChange(value) { if (value) showFloating(); else panel.moveTo('hidden'); },
 				});
-				MenuBar.addAction(action, 'help');
+				toggles.assistant = new Toggle('mo_help_disable_assistant', {
+					name: t('menu_disable_assistant'),
+					description: t('menu_disable_assistant_desc'),
+					icon: 'psychology_alt',
+					category: 'view',
+					default: !prefs.smartAssistant,
+					onChange(value) { prefs.smartAssistant = !value; assistant && assistant.refresh(); },
+				});
+				toggles.overlay = new Toggle('mo_help_disable_overlay', {
+					name: t('menu_disable_overlay'),
+					description: t('menu_disable_overlay_desc'),
+					icon: 'layers_clear',
+					category: 'view',
+					default: !prefs.smartOverlay,
+					onChange(value) { prefs.smartOverlay = !value; assistant && assistant.refresh(); },
+				});
+				menu = new BarMenu('mo_help', ['mo_help_toggle', '_', 'mo_help_disable_assistant', 'mo_help_disable_overlay'], { name: t('menu_title') });
+				MenuBar.addMenu(menu, 'view');   // right before Help
+				// Keep the "Floating Information" check mark in sync when the panel is closed by other means.
+				panel.on('moved_to', () => { toggles.floating.value = !isHidden(); toggles.floating.updateEnabledState(); });
+
+				// ---- Anchored, field-attached assistant --------------------------------
+				assistant = createAssistant();
+				assistant.start();
 
 				// Remember which text field the user was editing, and re-detect
 				// the context whenever focus or the active panel changes.
@@ -122,13 +145,16 @@ import { t } from './i18n.js';
 				listeners = [];
 				if (poll) clearInterval(poll);
 				forgetTarget();
-				if (action) action.delete();
+				if (assistant) assistant.stop();
+				if (menu) menu.delete();
+				Object.values(toggles).forEach(toggle => toggle.delete());
 				if (panel) {
 					panel.container.classList.remove('mo_help_pinned', 'mo_help_raised');
 					panel.delete();
 				}
 				if (style) style.delete();
-				panel = action = style = poll = null;
+				panel = style = poll = assistant = menu = null;
+				resetState();
 			},
 		});
 	}

@@ -9,6 +9,9 @@ const DEFAULTS = {
 	collapsed: {},         // category id -> true
 	catSets: {},           // context id -> category ids chosen by the user
 	history: [],           // last used item ids, newest first
+	smartAssistant: true,  // false = "Disable Smart Assistant" (Everything mode, no analysis)
+	smartOverlay: true,    // false = "Disable Smart Overlay" (no field-anchored suggestions)
+	assistPinned: false,   // keep the anchored assistant open when the field loses focus
 };
 
 export function loadPrefs() {

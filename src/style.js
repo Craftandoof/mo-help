@@ -171,3 +171,100 @@ export const CSS = `
 	color: var(--color-subtle_text);
 }
 `;
+
+export const ASSIST_CSS = `
+.mo_help_assist {
+	position: fixed;
+	z-index: 40;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	background-color: var(--color-ui);
+	color: var(--color-text);
+	border: 1px solid var(--color-accent);
+	border-radius: 4px;
+	box-shadow: 0 0 10px rgb(0 0 0 / 40%);
+	font-size: 0.92em;
+	overflow: hidden;
+}
+.mo_help_assist_head {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex: 0 0 auto;
+	padding: 2px 4px 2px 8px;
+	background-color: var(--color-back);
+	border-bottom: 1px solid var(--color-border);
+	user-select: none;
+}
+.mo_help_assist.below .mo_help_assist_head { order: 2; border-bottom: 0; border-top: 1px solid var(--color-border); }
+.mo_help_assist_title {
+	color: var(--color-subtle_text);
+	text-transform: uppercase;
+	font-size: 0.8em;
+	letter-spacing: 0.04em;
+}
+.mo_help_assist_crumb {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: var(--font-code);
+	color: var(--color-light);
+}
+.mo_help_assist_btn {
+	flex: 0 0 auto;
+	font-size: 16px;
+	width: 18px;
+	height: 18px;
+	cursor: pointer;
+	color: var(--color-subtle_text);
+}
+.mo_help_assist_btn:hover { color: var(--color-light); }
+.mo_help_assist_btn.on { color: var(--color-accent); }
+.mo_help_assist_list {
+	flex: 1 1 auto;
+	margin: 0;
+	padding: 2px;
+	overflow-y: auto;
+	list-style: none;
+}
+.mo_help_assist_list li {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	column-gap: 8px;
+	padding: 2px 6px;
+	border-left: 3px solid transparent;
+	border-radius: 2px;
+	cursor: pointer;
+}
+.mo_help_assist_list li.selected {
+	background-color: var(--color-selected);
+	border-left-color: var(--color-accent);
+}
+.mo_help_assist_list li.selected .desc { display: block; }
+.mo_help_assist_list code {
+	font-family: var(--font-code);
+	color: var(--color-light);
+	background: none;
+	padding: 0;
+	word-break: break-all;
+}
+.mo_help_assist_list code b { color: var(--color-accent); }
+.mo_help_assist_list .tag {
+	align-self: center;
+	font-size: 0.78em;
+	color: var(--color-subtle_text);
+}
+.mo_help_assist_list .tag_project { color: var(--color-accent); }
+.mo_help_assist_list .desc {
+	display: none;
+	grid-column: 1 / -1;
+	color: var(--color-subtle_text);
+	font-size: 0.9em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+`;

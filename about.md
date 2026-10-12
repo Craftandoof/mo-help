@@ -17,3 +17,19 @@
 | Molang Editor | Variables, Queries, Math, Operators, Snippets |
 
 It only uses Blockbench theme colors, so it follows any theme.
+
+## Smart assistant (anchored to the field)
+
+Click into a Molang field (keyframe, Variable Placeholders, Animation Controller, animation properties, Molang editor) and a helper row appears **directly above the field** (below only when there is no room above). It cannot be dragged and disappears when the field loses focus, unless pinned.
+
+* **Namespace-aware:** `q.` → only `query.*`, `v.` → model/plugin variables, `math.` → math functions, `v.qu` → `v.queda`. A single typed letter may show the short form (`q.`, `v.`); two or more letters always show the full form.
+* **Field-aware priority:** *Anim Time Update* always starts with `query.anim_time`, `query.delta_time`…; *Blend Weight* starts with force/weight-like model variables, then `math.lerp`/`clamp`/`hermite_blend`; controller conditions and transitions list boolean queries (transitions also model variables).
+* **Project references:** animation, state, bone/locator, particle and sound names found in the open model.
+* Keys: ↑/↓ move, Enter/Tab insert, Esc closes (re-open by refocusing the field or with Ctrl+Space).
+* While active it replaces Blockbench's own Molang autocomplete popup for that field.
+
+## Mo'Help menu
+
+* **Floating Information** – shows/hides the floating guide.
+* **Disable Smart Assistant** – no analysis; the guide switches from *Auto* to *Everything*.
+* **Disable Smart Overlay** – never places suggestions above the field you edit.

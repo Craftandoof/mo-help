@@ -21,6 +21,12 @@ Load `dist/mo_help.js` in Blockbench with **File → Plugins → Load Plugin fro
 src/index.js       plugin registration, panel, context watcher, toggle action
 src/panel.js       Vue component (search, chips, groups, learn mode)
 src/contexts.js    context -> categories matrix + detection
+src/assistant.js   field-anchored suggestion row (positioning, keyboard, dismiss)
+src/suggest.js     pure suggestion engine (namespaces, priorities) – unit tested
+src/profiles.js    per-field priority lists
+src/fields.js      detects what a focused element is for
+src/project.js     variables / animations / bones / ... of the open model
+src/state.js       shared, persisted preferences
 src/insert.js      insertion into the focused field
 src/search.js      fuzzy scoring
 src/data/*.js      one file per category (add a file + register in data/index.js)

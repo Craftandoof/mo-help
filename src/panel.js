@@ -2,7 +2,7 @@ import { ALL_ITEMS } from './data/index.js';
 import { CATEGORIES, CONTEXTS, CONTEXT_IDS, contextLabel } from './contexts.js';
 import { search } from './search.js';
 import { insertText, copyText } from './insert.js';
-import { loadPrefs, savePrefs } from './storage.js';
+import { getState } from './state.js';
 import { t } from './i18n.js';
 
 const MAX_HISTORY = 8;
@@ -14,15 +14,20 @@ export function createComponent() {
 		name: 'panel-mo-help',
 		data() {
 			return {
-				prefs: loadPrefs(),
+				prefs: getState(),
 				query: '',
 				detected: 'help',
 				open: {},   // item id -> "Why this?" expanded
 			};
 		},
 		computed: {
+			// With the Smart Assistant disabled the guide stays in "Everything" mode.
 			context() {
+				if (!this.prefs.smartAssistant) return 'help';
 				return this.prefs.contextMode === 'auto' ? this.detected : this.prefs.contextMode;
+			},
+			selectValue() {
+				return this.prefs.smartAssistant ? this.prefs.contextMode : 'help';
 			},
 			contexts() {
 				return CONTEXT_IDS.map(id => ({ id, label: contextLabel(id) }));
@@ -70,9 +75,6 @@ export function createComponent() {
 			},
 			searching() { return !!this.query.trim(); },
 		},
-		watch: {
-			prefs: { deep: true, handler(value) { savePrefs(value); } },
-		},
 		methods: {
 			t,
 			inContext(item, ctx, cats) {
@@ -114,7 +116,7 @@ export function createComponent() {
 		template: `
 			<div class="mo_help">
 				<div class="mo_help_bar">
-					<select class="dark_bordered" v-model="prefs.contextMode">
+					<select class="dark_bordered" :value="selectValue" :disabled="!prefs.smartAssistant" @change="prefs.contextMode = $event.target.value">
 						<option value="auto">{{ t('auto') }} · {{ contexts.find(c => c.id === detected).label }}</option>
 						<option v-for="c in contexts" :key="c.id" :value="c.id">{{ c.label }}</option>
 					</select>

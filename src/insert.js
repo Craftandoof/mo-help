@@ -104,3 +104,46 @@ export function copyText(text) {
 	} catch (err) { /* ignore */ }
 	return false;
 }
+
+function selectOffsets(el, start, end) {
+	const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+	const range = document.createRange();
+	let pos = 0, startSet = false, endSet = false, node, lastNode = null;
+	while ((node = walker.nextNode())) {
+		const len = node.nodeValue.length;
+		lastNode = node;
+		if (!startSet && start <= pos + len) { range.setStart(node, start - pos); startSet = true; }
+		if (startSet && end <= pos + len) { range.setEnd(node, end - pos); endSet = true; break; }
+		pos += len;
+	}
+	if (!startSet) { range.selectNodeContents(el); range.collapse(false); }
+	else if (!endSet && lastNode) range.setEnd(lastNode, lastNode.nodeValue.length);
+	const sel = window.getSelection();
+	sel.removeAllRanges();
+	sel.addRange(range);
+}
+
+/**
+ * Replaces the text between two offsets of a field (input, textarea or the
+ * contenteditable <pre> of Blockbench's Molang editors) with `text`, going
+ * through the browser's editing pipeline so Blockbench's own input handling and
+ * Undo behaviour apply exactly as if the user had typed it.
+ */
+export function replaceRange(el, start, end, text) {
+	const editable = el.isContentEditable && el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA';
+	if (document.activeElement !== el) el.focus();
+	if (editable) selectOffsets(el, start, end);
+	else el.setSelectionRange(start, end);
+
+	let done = false;
+	try { done = document.execCommand('insertText', false, text); } catch (err) { done = false; }
+	if (!done && !editable) {
+		el.setRangeText(text, start, end, 'end');
+		el.dispatchEvent(new Event('input', { bubbles: true }));
+		done = true;
+	}
+	if (done && editable) {
+		el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, cancelable: true, key: 'Unidentified', keyCode: 229, which: 229 }));
+	}
+	return done;
+}
